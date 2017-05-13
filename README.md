@@ -35,12 +35,12 @@ This example reads the `/etc/hosts` file without using read(2). You can see the 
 
 To follow along, use [Google's nsjail](https://github.com/google/nsjail) to run programs with a specific seccomp policy. Try replacing `read` with any of `open`,`close`,`write`, or `mmap` in the DENY clause. Doing so should cause the command to fail because the shellcode in this example uses all four of those calls.
 ```
->:~/nsjail/nsjail -Mo --chroot / --seccomp_string 'POLICY a { DENY { read } } USE a DEFAULT ALLOW' -- $HOME/asm-tut/optimized
+>:~/nsjail/nsjail -Mo --chroot / --seccomp_string 'POLICY a { DENY { read } } USE a DEFAULT ALLOW' -- $HOME/seccomp-bypass/read-with-mmap
 [2017-05-12T16:48:04-0700] Mode: STANDALONE_ONCE
 ...
 [2017-05-12T16:48:04-0700] Uid map: inside_uid:360840 outside_uid:360840
 [2017-05-12T16:48:04-0700] Gid map: inside_gid:5000 outside_gid:5000
-[2017-05-12T16:48:04-0700] Executing '/home/unixist/asm-tut/optimized' for '[STANDALONE_MODE]'
+[2017-05-12T16:48:04-0700] Executing '/home/unixist/seccomp-bypass/read-with-mmap' for '[STANDALONE_MODE]'
 127.0.0.1	localhost
 >:
 ```
