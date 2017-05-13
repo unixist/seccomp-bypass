@@ -32,7 +32,7 @@ Below are examples of shellcode that performs the specified action in the case w
 
 ## Read a file from the filesystem
 ### Syscalls disallowed: `read`
-This example is based on shellcode from `src/read-with-mmap.s` that reads the `/etc/hosts` file without using read(2). You can see the line `127.0.0.1	localhost` present in the output.
+This example is based on shellcode from `src/read-with-mmap.s` that reads a target's `/etc/hosts` file without using read(2). You can see the line `127.0.0.1	localhost` present in the output below.
 
 To follow along, use [Google's nsjail](https://github.com/google/nsjail) to run programs with a specific seccomp policy. Try replacing `read` with any of `open`,`close`,`write`, or `mmap` in the DENY clause. Doing so should cause the command to fail because the shellcode in this example uses all four of those calls.
 ```
