@@ -60,7 +60,8 @@ Now run it with seccomp filters in place with `nsjail`:
 Below shows a default DENY policy. You'll need to allow a few more system calls to use it in this example. This is a wider set of calls than what is required of an application in the wild, which does "start > set seccomp filter > fork", because in this example case we have to interact with the OS to set up the process space first (doing an `execve` and not just a `fork`.
 
 ```bash
->: ~/nsjail/nsjail -Mo --chroot / --seccomp_string 'POLICY a { ALLOW { open, write, mmap, execve, newuname, brk, arch_prctl, readlink, access, mprotect, exit } } USE a DEFAULT DENY' -- $f```
+>: ~/nsjail/nsjail -Mo --chroot / --seccomp_string 'POLICY a { ALLOW { open, write, mmap, execve, newuname, brk, arch_prctl, readlink, access, mprotect, exit } } USE a DEFAULT DENY' -- $f
+```
 
 ### Syscalls required: `open`, `sendfile`
 This example is based on shellcode from `src/read-with-sendfile.s`. We can get away with reading a file with just these two system calls, explicitly denying the typical `read` and `mmap` calls.
