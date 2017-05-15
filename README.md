@@ -37,10 +37,10 @@ Below are examples of shellcodes that perform each section's goal within certain
 *To follow along, use [Google's nsjail](https://github.com/google/nsjail) to run programs with a specific seccomp policy.*
 
 ## Read a file from the filesystem
-### Syscalls used: `open`,`close`,`write`, `mmap`
+### Syscalls used: `open`,`exit`,`write`, `mmap`
 This example is based on shellcode from `src/read-with-mmap.s`, which reads the `/etc/hosts` file without using read(2). You can see the line `127.0.0.1	localhost` present in the output below, which is a sign the seccomp filter is bypassed successfully.
 
-Try replacing the `read` in the DENY clause with `open`,`close`,`write`, or `mmap`. Doing so should cause the command to fail because the shellcode in this example uses all four of those calls.
+Try replacing the `read` in the DENY clause with `open`,`exit`,`write`, or `mmap`. Doing so should cause the command to fail because the shellcode in this example uses all four of those calls.
 
 Generate the program:
 ```bash
