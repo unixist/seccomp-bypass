@@ -28,13 +28,13 @@ int main(){
  *Compile it with: `$gcc -static read-with-mmap.c -o read-with-mmap`
 
 # Examples
-Below are examples of shellcode that performs the specified action in the case where the specified system calls are disallowed. The shellcode is derived by running `src/gen-shellcode.sh $file.s`.
+Below are examples of shellcodes that perform action the section as specified. Each section has a list of means to carry out that action using a variety of system call combinations. To follow along, use [Google's nsjail](https://github.com/google/nsjail) to run programs with a specific seccomp policy.
 
 ## Read a file from the filesystem
 ### Syscalls used: `open`,`close`,`write`, `mmap`
 This example is based on shellcode from `src/read-with-mmap.s` that reads a target's `/etc/hosts` file without using read(2). You can see the line `127.0.0.1	localhost` present in the output below, which is a sign the seccomp filter is bypassed successfully.
 
-To follow along, use [Google's nsjail](https://github.com/google/nsjail) to run programs with a specific seccomp policy. Try replacing `read` with any of `open`,`close`,`write`, or `mmap` in the DENY clause. Doing so should cause the command to fail because the shellcode in this example uses all four of those calls.
+Try replacing the `read` in the DENY clause with `open`,`close`,`write`, or `mmap`. Doing so should cause the command to fail because the shellcode in this example uses all four of those calls.
 ```
 >:~/nsjail/nsjail -Mo --chroot / --seccomp_string 'POLICY a { DENY { read } } USE a DEFAULT ALLOW' -- $HOME/seccomp-bypass/read-with-mmap
 [2017-05-12T16:48:04-0700] Mode: STANDALONE_ONCE
