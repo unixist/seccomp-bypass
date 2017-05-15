@@ -65,7 +65,7 @@ Below shows a default DENY policy. You'll need to allow a few more system calls 
 ```
 
 ### Syscalls required: `open`, `sendfile`
-This example is based on shellcode from `src/read-with-sendfile.s`. We can get away with reading a file with just these two system calls.
+This example is based on shellcode from `src/read-with-sendfile.s`. We can get away with reading a file with just these two system calls, explicitly denying the typical `read` and `mmap` calls.
 
 ```bash
 >: f=`tempfile`; ./gen-shellcode.sh src/read-with-sendfile.s > $f.c; gcc -static $f.c -o $f
