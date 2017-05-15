@@ -37,7 +37,7 @@ Below are examples of shellcodes that perform each section's goal within certain
 *To follow along, use [Google's nsjail](https://github.com/google/nsjail) to run programs with a specific seccomp policy.*
 
 ## Read a file from the filesystem
-### Syscalls used: `open`,`exit`,`write`, `mmap`
+### Syscalls required: `open`,`exit`,`write`, `mmap`
 This example is based on shellcode from `src/read-with-mmap.s`, which reads the `/etc/hosts` file without using read(2). You can see the line `127.0.0.1	localhost` present in the output below, which is a sign the seccomp filter is bypassed successfully.
 
 Try replacing the `read` in the DENY clause with `open`,`exit`,`write`, or `mmap`. Doing so should cause the command to fail because the shellcode in this example uses all four of those calls.
@@ -48,7 +48,7 @@ f=`tempfile`; ./gen-shellcode.sh src/read-with-mmap.s > $f.c; gcc -static $f.c -
 ```
 
 Now run it with `nsjail`:
-```
+```bash
 >:~/nsjail/nsjail -Mo --chroot / --seccomp_string 'POLICY a { DENY { read } } USE a DEFAULT ALLOW' -- $f
 [2017-05-12T16:48:04-0700] Mode: STANDALONE_ONCE
 ...
@@ -57,5 +57,21 @@ Now run it with `nsjail`:
 >:
 ```
 
-### Syscalls used: `open`, `sendfile`
-coming soon
+Below shows a default DENY policy. You'll need to allow a few more system calls to use it in this example. This is a wider set of calls than what is required of an application in the wild, which does "start > set seccomp filter > fork", because in this example case we have to interact with the OS to set up the process space first (doing an `execve` and not just a `fork`.
+
+```bash
+~/nsjail/nsjail -Mo --chroot / --seccomp_string 'POLICY a { ALLOW { read, open, write, mmap, execve, newuname, brk, arch_prctl, readlink, access, mprotect, exit } } USE a DEFAULT DENY' -- $f
+```
+
+### Syscalls required: `open`, `sendfile`
+We can get away with reading a file with just these two system calls. So block the 
+
+```bash
+>: f=`tempfile`; ./gen-shellcode.sh src/read-with-mmap.s > $f.c; gcc -static $f.c -o $f
+>: ~/nsjail/nsjail -Mo --chroot / --seccomp_string 'POLICY a { DENY { read,write,mmap } } USE a DEFAULT ALLOW' -- $f
+[2017-05-15T16:03:04-0700] Mode: STANDALONE_ONCE
+...
+[2017-05-15T16:03:04-0700] Executing '/tmp/fileCNqBB4' for '[STANDALONE_MODE]'
+127.0.0.1	localhost
+>:
+```
