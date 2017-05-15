@@ -3,6 +3,8 @@ seccomp is used by applications to restrict system calls it can make, thus sandb
 
 The goal here is to bypass these seccomp restrictions when exploiting applications. So you need shellcode that will carry out its purpose while still adhering to the seccomp filter in place. So if the filter specifies a denial of `read` and `write`, then valid shellcode may use any system call but those.
 
+**The reason bypasses are possible is not because seccomp is flawed; it because of inappropriate seccomp filters. Just like an exploit takes advantage of a programming mistake, these bypasses take advantage of a configuration mistake.**
+
 # Premise
 A typical exploit scenario is that you have a vulnerable application into which you can inject shell code. If it's sandboxed, you need to tailor the shellcode to include only the permitted system calls.
 
