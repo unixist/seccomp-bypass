@@ -4,9 +4,11 @@ seccomp is used by applications to restrict system calls it can make, thus sandb
 The goal here is to bypass these seccomp restrictions when exploiting applications. So you need shellcode that will carry out its purpose while still adhering to the seccomp filter in place. So if the filter specifies a denial of `read` and `write`, then valid shellcode may use any system call but those.
 
 # Premise
-A typical exploit scenario is that you have a vulnerable application into which you can inject shell code. The code below is a generated application, contrived purely to run some shellcode. The output is a test program that we run to confirm the shellcode's viability when injected into a foreign application.
+A typical exploit scenario is that you have a vulnerable application into which you can inject shell code. If it's sandboxed, you need to tailor the shellcode to include only the permitted system calls.
 
-&gt;: ./gen-shellcode.sh src/read-with-mmap.s 
+The code below is a generated application, contrived purely to run test shellcode from `src/`. The output is a test program that we run to confirm the shellcode's viability when injected into a foreign application.
+
+&gt;: ./gen-shellcode.sh src/read-with-mmap.s
 ```c
 #include <stdint.h>
 #include <sys/mman.h>
@@ -25,23 +27,30 @@ int main(){
   return 0;
 }
 ```
- *Compile it with: `$gcc -static read-with-mmap.c -o read-with-mmap`
+Compile it with: `$gcc -static read-with-mmap.c -o read-with-mmap`
 
 # Examples
-Below are examples of shellcodes that perform action the section as specified. Each section has a list of means to carry out that action using a variety of system call combinations. To follow along, use [Google's nsjail](https://github.com/google/nsjail) to run programs with a specific seccomp policy.
+Below are examples of shellcodes that perform each section's goal within certain system call constraints. Each goal has one or more shellcodes using a combination of system call combinations to achieve it.
+
+*To follow along, use [Google's nsjail](https://github.com/google/nsjail) to run programs with a specific seccomp policy.*
 
 ## Read a file from the filesystem
 ### Syscalls used: `open`,`close`,`write`, `mmap`
-This example is based on shellcode from `src/read-with-mmap.s` that reads a target's `/etc/hosts` file without using read(2). You can see the line `127.0.0.1	localhost` present in the output below, which is a sign the seccomp filter is bypassed successfully.
+This example is based on shellcode from `src/read-with-mmap.s`, which reads the `/etc/hosts` file without using read(2). You can see the line `127.0.0.1	localhost` present in the output below, which is a sign the seccomp filter is bypassed successfully.
 
 Try replacing the `read` in the DENY clause with `open`,`close`,`write`, or `mmap`. Doing so should cause the command to fail because the shellcode in this example uses all four of those calls.
+
+Generate the program:
+```bash
+f=`tempfile`; ./gen-shellcode.sh src/read-with-mmap.s > $f.c; gcc -static $f.c -o $f
 ```
->:~/nsjail/nsjail -Mo --chroot / --seccomp_string 'POLICY a { DENY { read } } USE a DEFAULT ALLOW' -- $HOME/seccomp-bypass/read-with-mmap
+
+Now run it with `nsjail`:
+```
+>:~/nsjail/nsjail -Mo --chroot / --seccomp_string 'POLICY a { DENY { read } } USE a DEFAULT ALLOW' -- $f
 [2017-05-12T16:48:04-0700] Mode: STANDALONE_ONCE
 ...
-[2017-05-12T16:48:04-0700] Uid map: inside_uid:360840 outside_uid:360840
-[2017-05-12T16:48:04-0700] Gid map: inside_gid:5000 outside_gid:5000
-[2017-05-12T16:48:04-0700] Executing '/home/unixist/seccomp-bypass/read-with-mmap' for '[STANDALONE_MODE]'
+[2017-05-12T16:48:04-0700] Executing '/tmp/fileVRncd7' for '[STANDALONE_MODE]'
 127.0.0.1	localhost
 >:
 ```
