@@ -50,31 +50,28 @@ f=`tempfile`; ./gen-shellcode.sh src/read-with-mmap.s > $f.c; gcc -static $f.c -
 
 Now run it with seccomp filters in place with `nsjail`:
 ```bash
->:~/nsjail/nsjail -Mo --chroot / --seccomp_string 'POLICY a { DENY { read } } USE a DEFAULT ALLOW' -- $f
+~/nsjail/nsjail -Mo --chroot / --seccomp_string 'POLICY a { DENY { read } } USE a DEFAULT ALLOW' -- $f
 [2017-05-12T16:48:04-0700] Mode: STANDALONE_ONCE
 ...
 [2017-05-12T16:48:04-0700] Executing '/tmp/fileVRncd7' for '[STANDALONE_MODE]'
 127.0.0.1	localhost
->:
 ```
 
 Below shows a default DENY policy. You'll need to allow a few more system calls to use it in this example. This is a wider set of calls than what is required of an application in the wild, which does "start > set seccomp filter > fork", because in this example case we have to interact with the OS to set up the process space first (doing an `execve` and not just a `fork`.
 
 ```bash
-~/nsjail/nsjail -Mo --chroot / --seccomp_string 'POLICY a { ALLOW { read, open, write, mmap, execve, newuname, brk, arch_prctl, readlink, access, mprotect, exit } } USE a DEFAULT DENY' -- $f
-```
+~/nsjail/nsjail -Mo --chroot / --seccomp_string 'POLICY a { ALLOW { open, write, mmap, execve, newuname, brk, arch_prctl, readlink, access, mprotect, exit } } USE a DEFAULT DENY' -- $f```
 
 ### Syscalls required: `open`, `sendfile`
 This example is based on shellcode from `src/read-with-sendfile.s`. We can get away with reading a file with just these two system calls, explicitly denying the typical `read` and `mmap` calls.
 
 ```bash
->: f=`tempfile`; ./gen-shellcode.sh src/read-with-sendfile.s > $f.c; gcc -static $f.c -o $f
->: ~/nsjail/nsjail -Mo --chroot / --seccomp_string 'POLICY a { DENY { read,write,mmap } } USE a DEFAULT ALLOW' -- $f
+f=`tempfile`; ./gen-shellcode.sh src/read-with-sendfile.s > $f.c; gcc -static $f.c -o $f
+~/nsjail/nsjail -Mo --chroot / --seccomp_string 'POLICY a { DENY { read,write,mmap } } USE a DEFAULT ALLOW' -- $f
 [2017-05-15T16:03:04-0700] Mode: STANDALONE_ONCE
 ...
 [2017-05-15T16:03:04-0700] Executing '/tmp/fileCNqBB4' for '[STANDALONE_MODE]'
 127.0.0.1	localhost
->:
 ```
 
 An example with default DENY:
