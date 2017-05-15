@@ -37,8 +37,9 @@ Below are examples of shellcodes that perform each section's goal within certain
 *To follow along, use [Google's nsjail](https://github.com/google/nsjail) to run programs with a specific seccomp policy.*
 
 ## Read a file from the filesystem
+Each of these examples reads the file `/etc/hosts` from the target system without using the typical `read(2)` call.
 ### Syscalls required: `open`,`exit`,`write`, `mmap`
-This example is based on shellcode from `src/read-with-mmap.s`, which reads the `/etc/hosts` file without using read(2). You can see the line `127.0.0.1	localhost` present in the output below, which is a sign the seccomp filter is bypassed successfully.
+This example is based on shellcode from `src/read-with-mmap.s`. You can see the line `127.0.0.1	localhost` present in the output below, which is a sign the seccomp filter is bypassed successfully.
 
 Try replacing the `read` in the DENY clause with `open`,`exit`,`write`, or `mmap`. Doing so should cause the command to fail because the shellcode in this example uses all four of those calls.
 
@@ -64,7 +65,7 @@ Below shows a default DENY policy. You'll need to allow a few more system calls 
 ```
 
 ### Syscalls required: `open`, `sendfile`
-We can get away with reading a file with just these two system calls. So block the 
+This example is based on shellcode from `src/read-with-sendfile.s`. We can get away with reading a file with just these two system calls.
 
 ```bash
 >: f=`tempfile`; ./gen-shellcode.sh src/read-with-mmap.s > $f.c; gcc -static $f.c -o $f
@@ -74,4 +75,9 @@ We can get away with reading a file with just these two system calls. So block t
 [2017-05-15T16:03:04-0700] Executing '/tmp/fileCNqBB4' for '[STANDALONE_MODE]'
 127.0.0.1	localhost
 >:
+```
+
+An example with default DENY:
+```bash
+~/nsjail/nsjail -Mo --chroot / --seccomp_string 'POLICY a { ALLOW { open, sendfile64, execve, newuname, brk, arch_prctl, readlink, access, mprotect, exit } } USE a DEFAULT DENY' -- $f
 ```
