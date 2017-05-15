@@ -48,7 +48,7 @@ Generate the program:
 f=`tempfile`; ./gen-shellcode.sh src/read-with-mmap.s > $f.c; gcc -static $f.c -o $f
 ```
 
-Now run it with `nsjail`:
+Now run it with seccomp filters in place with `nsjail`:
 ```bash
 >:~/nsjail/nsjail -Mo --chroot / --seccomp_string 'POLICY a { DENY { read } } USE a DEFAULT ALLOW' -- $f
 [2017-05-12T16:48:04-0700] Mode: STANDALONE_ONCE
