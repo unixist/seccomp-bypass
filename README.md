@@ -68,7 +68,7 @@ Below shows a default DENY policy. You'll need to allow a few more system calls 
 This example is based on shellcode from `src/read-with-sendfile.s`. We can get away with reading a file with just these two system calls.
 
 ```bash
->: f=`tempfile`; ./gen-shellcode.sh src/read-with-mmap.s > $f.c; gcc -static $f.c -o $f
+>: f=`tempfile`; ./gen-shellcode.sh src/read-with-sendfile.s > $f.c; gcc -static $f.c -o $f
 >: ~/nsjail/nsjail -Mo --chroot / --seccomp_string 'POLICY a { DENY { read,write,mmap } } USE a DEFAULT ALLOW' -- $f
 [2017-05-15T16:03:04-0700] Mode: STANDALONE_ONCE
 ...
