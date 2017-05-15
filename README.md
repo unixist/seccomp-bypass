@@ -4,9 +4,9 @@ seccomp is used by applications to restrict system calls it can make, thus sandb
 The goal here is to bypass these seccomp restrictions when exploiting applications. So you need shellcode that will carry out its purpose while still adhering to the seccomp filter in place. So if the filter specifies a denial of `read` and `write`, then valid shellcode may use any system call but those.
 
 # Premise
-A typical exploit scenario is that you have a vulnerable application into which you can inject shell code. The code below is a contrived application that just executes the shell code we specify.* So no vulnerability is required, but it suffices to prove the point.
+A typical exploit scenario is that you have a vulnerable application into which you can inject shell code. The code below is a generated application, contrived purely to run some shellcode. The output is a test program that we run to confirm the shellcode's viability when injected into a foreign application.
 
-&gt;:cat read-with-mmap.c
+&gt;: ./gen-shellcode.sh src/read-with-mmap.s 
 ```
 #include <stdint.h>
 #include <sys/mman.h>
@@ -32,7 +32,7 @@ Below are examples of shellcode that performs the specified action in the case w
 
 ## Read a file from the filesystem
 ### Syscalls used: `open`,`close`,`write`, `mmap`
-This example is based on shellcode from `src/read-with-mmap.s` that reads a target's `/etc/hosts` file without using read(2). You can see the line `127.0.0.1	localhost` present in the output below.
+This example is based on shellcode from `src/read-with-mmap.s` that reads a target's `/etc/hosts` file without using read(2). You can see the line `127.0.0.1	localhost` present in the output below, which is a sign the seccomp filter is bypassed successfully.
 
 To follow along, use [Google's nsjail](https://github.com/google/nsjail) to run programs with a specific seccomp policy. Try replacing `read` with any of `open`,`close`,`write`, or `mmap` in the DENY clause. Doing so should cause the command to fail because the shellcode in this example uses all four of those calls.
 ```
