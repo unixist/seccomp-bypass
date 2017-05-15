@@ -66,6 +66,7 @@ Below shows a default DENY policy. You'll need to allow a few more system calls 
 ### Syscalls required: `open`, `sendfile`
 This example is based on shellcode from `src/read-with-sendfile.s`. We can get away with reading a file with just these two system calls, explicitly denying the typical `read` and `mmap` calls.
 
+Blacklist policy (default allow):
 ```bash
 >: f=`tempfile`; ./gen-shellcode.sh src/read-with-sendfile.s > $f.c; gcc -static $f.c -o $f
 >: ~/nsjail/nsjail -Mo --chroot / --seccomp_string 'POLICY a { DENY { read,write,mmap } } USE a DEFAULT ALLOW' -- $f
@@ -75,7 +76,7 @@ This example is based on shellcode from `src/read-with-sendfile.s`. We can get a
 127.0.0.1	localhost
 ```
 
-An example with default DENY:
+Whitelist policy (default deny):
 ```bash
 >: ~/nsjail/nsjail -Mo --chroot / --seccomp_string 'POLICY a { ALLOW { open, sendfile64, execve, newuname, brk, arch_prctl, readlink, access, mprotect, exit } } USE a DEFAULT DENY' -- $f
 ```
