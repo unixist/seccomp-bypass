@@ -7,7 +7,7 @@ The goal here is to bypass these seccomp restrictions when exploiting applicatio
 A typical exploit scenario is that you have a vulnerable application into which you can inject shell code. The code below is a generated application, contrived purely to run some shellcode. The output is a test program that we run to confirm the shellcode's viability when injected into a foreign application.
 
 &gt;: ./gen-shellcode.sh src/read-with-mmap.s 
-```
+```c
 #include <stdint.h>
 #include <sys/mman.h>
 
