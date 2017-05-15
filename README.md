@@ -1,7 +1,7 @@
 # seccomp-bypass
 seccomp is used by applications to restrict system calls it can make, thus sandboxing it. Its goal is to limit the application to only the facilities it needs to perform its job and nothing more.
 
-The goal here is to bypass these seccomp restrictions when exploiting applications. So you need shellcode that will carry out its purpose while still adhering to the seccomp filter in place. So if the filter specifies a denial of `read` and `write`, then valid shellcode may use any system call but those.
+The goal here is to bypass these seccomp restrictions when exploiting applications. You need shellcode that will carry out its purpose while still adhering to the application's seccomp filter. So if the filter specifies a denial of `read` and `write`, then valid shellcode may use any system call but those.
 
 **Bypasses are possible not because seccomp is flawed, but because sometimes seccomp filters are inappropriately configured. Just like an exploit takes advantage of programming mistakes, these bypasses take advantage of configuration mistakes.**
 
