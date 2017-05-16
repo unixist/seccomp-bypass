@@ -1,12 +1,13 @@
 .globl _start
 _start:
-	movw $0x7374, %r11w            /* ts */
+	// open
+	movw $0x7374, %r11w             /* ts */
 	push %r11
 	movq $0x736f682f6374652f, %r11  /* /etc/hos */
 	push %r11
 	lea 0(%rsp), %rdi
 	xor %rsi, %rsi
-	addb $2, %al                   /* %rsi is initialized to 0 */
+	addb $2, %al
 	syscall
 
 	// sendfile
