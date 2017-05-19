@@ -29,6 +29,8 @@ int main(){
   return 0;
 }
 ```
+This program is a test harness for the shellcode that'll be injected into the vulnerable application. It's this shellcode that is intended to leverage only the system calls permitted by the vulnerable application's seccomp filter.
+
 Compile it with: `$gcc -static read-with-mmap.c -o read-with-mmap`
 
 # Examples
@@ -37,8 +39,9 @@ Below are examples of shellcodes that perform each section's goal within certain
 *To follow along, use [Google's nsjail](https://github.com/google/nsjail) to run programs with a specific seccomp policy.*
 
 ## Read a file from the filesystem
-Each of these examples reads the file `/etc/hosts` from the target system without using the typical `read(2)` call.
-### Syscalls required: `open`,`exit`,`write`, `mmap`
+Each of these examples reads the file `/etc/hosts` from the target system using a variety of system calls.
+### read-with-mmap.s
+#### syscalls: `open`,`write`, `mmap`,`exit`
 This example is based on shellcode from `src/read-with-mmap.s`. You can see the line `127.0.0.1	localhost` present in the output below, which is a sign the seccomp filter is bypassed successfully.
 
 Try replacing the `read` in the DENY clause with `open`,`exit`,`write`, or `mmap`. Doing so should cause the command to fail because the shellcode in this example uses all four of those calls.
@@ -63,7 +66,8 @@ Below shows a default DENY policy. You'll need to allow a few more system calls 
 >: ~/nsjail/nsjail -Mo --chroot / --seccomp_string 'POLICY a { ALLOW { open, write, mmap, execve, newuname, brk, arch_prctl, readlink, access, mprotect, exit } } USE a DEFAULT DENY' -- $f
 ```
 
-### Syscalls required: `open`, `sendfile`
+### read-with-sendfile.s
+#### syscalls: `open`, `sendfile`,`exit`
 This example is based on shellcode from `src/read-with-sendfile.s`. We can get away with reading a file with just these two system calls, explicitly denying the typical `read` and `mmap` calls.
 
 Blacklist policy (default allow):
@@ -80,3 +84,10 @@ Whitelist policy (default deny):
 ```bash
 >: ~/nsjail/nsjail -Mo --chroot / --seccomp_string 'POLICY a { ALLOW { open, sendfile64, execve, newuname, brk, arch_prctl, readlink, access, mprotect, exit } } USE a DEFAULT DENY' -- $f
 ```
+
+## Remotely read a file from the filesystem
+Each of these examples exfiltrates the file `/etc/hosts` from the target system using a variety of system calls.
+
+### exfil-with-sendfile.s
+#### syscalls: `open`, `sendfile`, `socket`, `connect`,`exit`
+This example is based on shellcode from `exfil-with-sendfile.s`. This will read `/etc/hosts` on the target and dump it to 127.0.0.1 TCP/8000. This currently only supports ipv4.
