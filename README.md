@@ -90,4 +90,4 @@ Each of these examples exfiltrates the file `/etc/hosts` from the target system 
 
 ### exfil-with-sendfile.s
 #### syscalls: `open`, `sendfile`, `socket`, `connect`,`exit`
-This example is based on shellcode from `exfil-with-sendfile.s`. This will read `/etc/hosts` on the target and dump it to 127.0.0.1 TCP/8000. This currently only supports ipv4.
+This example is based on shellcode from `src/exfil-with-sendfile.s`. This will read `/etc/hosts` on the target and dump it to 127.0.0.1 TCP/8000. This currently only supports ipv4.
